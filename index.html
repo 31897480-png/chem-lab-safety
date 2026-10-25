@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>化学实验室安全隐患排查 · 大家来找茬</title>
+<style>
+/* SECTION: base */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0e1a2b;--panel:#16283f;--panel2:#1d3350;--line:#2b4468;
+  --txt:#e8f0f9;--sub:#9db2c9;--green:#2ecc71;--greenD:#1e9e57;
+  --red:#ff5a4e;--amber:#f0bf4c;--blue:#4da3ff;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--txt);font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;line-height:1.6}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:8px}
+input{font-family:inherit}
+.hidden{display:none!important}
+h1{font-size:20px}
+.small{font-size:12px;color:var(--sub)}
+/* SECTION: layout */
+#topbar{display:flex;align-items:center;gap:12px;padding:10px 18px;background:linear-gradient(90deg,#12335c,#16283f 60%);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+#topbar .logo{width:34px;height:34px;border-radius:8px;background:radial-gradient(circle at 30% 30%,#5ec98f,#1e9e57);display:grid;place-items:center;font-size:18px}
+#topbar .who{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:14px}
+#topbar .badge{padding:2px 10px;border-radius:20px;font-size:12px;background:var(--panel2);border:1px solid var(--line)}
+#topbar .badge.stu{color:#8fd3ff;border-color:#2b5d8a}
+#topbar .badge.tea{color:#ffd98f;border-color:#8a6b2b}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+.btn{padding:9px 18px;background:var(--blue);color:#06121f;font-weight:700;font-size:14px;transition:filter .15s}
+.btn:hover{filter:brightness(1.12)}
+.btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
+.btn.green{background:var(--green);color:#04160c}
+.btn.red{background:var(--red);color:#200604}
+.btn.sm{padding:5px 12px;font-size:12px}
+/* SECTION: login */
+#view-login{min-height:calc(100vh - 60px);display:grid;place-items:center;padding:24px}
+.login-card{width:min(430px,100%);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.login-card h2{font-size:22px;text-align:center}
+.login-card .sub{text-align:center;color:var(--sub);font-size:13px;margin:6px 0 18px}
+.role-tabs{display:flex;gap:8px;margin-bottom:16px}
+.role-tabs button{flex:1;padding:11px;background:var(--panel2);color:var(--sub);font-size:15px;border:1px solid var(--line)}
+.role-tabs button.on{background:var(--blue);color:#06121f;font-weight:700;border-color:var(--blue)}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:var(--sub);margin-bottom:5px}
+.field input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:#0d1a2c;color:var(--txt);font-size:15px}
+.field input:focus{outline:none;border-color:var(--blue)}
+#loginErr{color:var(--red);font-size:13px;min-height:20px;margin:2px 0 8px}
+.login-card .btn{width:100%;padding:12px;font-size:16px}
+.tip{font-size:12px;color:var(--sub);margin-top:14px;background:var(--panel2);border:1px dashed var(--line);border-radius:8px;padding:10px}
+/* SECTION: student home */
+.hero{display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:linear-gradient(120deg,#123a5e,#16283f);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:18px}
+.hero .big{font-size:30px;font-weight:800;color:var(--green)}
+.hero .meta{color:var(--sub);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px}
+.lv-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:transform .15s,border-color .15s;cursor:pointer}
+.lv-card:hover{transform:translateY(-3px);border-color:var(--blue)}
+.lv-card .thumb{height:128px;background-size:cover;background-position:center;position:relative}
+.lv-card .thumb .st{position:absolute;right:8px;top:8px;font-size:12px;padding:3px 10px;border-radius:14px;background:rgba(6,18,31,.75)}
+.lv-card .thumb .st.done{color:var(--green)}
+.lv-card .thumb .st.part{color:var(--amber)}
+.lv-card .body{padding:12px 14px}
+.lv-card .t{font-size:15px;font-weight:700}
+.lv-card .s{font-size:12px;color:var(--sub);margin-top:4px}
+.bar{height:6px;background:var(--panel2);border-radius:3px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#1e9e57,#2ecc71);border-radius:3px}
+/* SECTION: play */
+.play-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.play-head .t{font-size:17px;font-weight:800}
+.score-pill{margin-left:auto;display:flex;gap:10px;align-items:center}
+.score-pill .pill{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:5px 14px;font-size:13px}
+.score-pill .pill b{color:var(--green);font-size:16px}
+.score-pill .pill.m b{color:var(--red)}
+.stage-wrap{display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start}
+@media (max-width:900px){.stage-wrap{grid-template-columns:1fr}}
+.stage{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#000;user-select:none;-webkit-tap-highlight-color:transparent}
+.stage img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.hit-box{position:absolute;border:4px solid var(--green);border-radius:8px;box-shadow:0 0 14px rgba(46,204,113,.75),inset 0 0 12px rgba(46,204,113,.28);pointer-events:none;animation:pop .35s ease-out}
+.hit-box .tag{position:absolute;left:-1px;top:-26px;background:var(--green);color:#04160c;font-size:12px;font-weight:800;padding:2px 10px;border-radius:8px 8px 0 0;white-space:nowrap}
+@keyframes pop{0%{transform:scale(.6);opacity:.2}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.miss-flash{position:absolute;width:74px;height:74px;transform:translate(-50%,-50%);pointer-events:none;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,120,90,.95) 0%,rgba(255,90,78,.45) 45%,rgba(255,90,78,0) 72%);
+  animation:missFade .9s ease-out forwards}
+.miss-flash::after{content:"";position:absolute;inset:8px;border:3px solid rgba(255,255,255,.9);border-radius:50%;animation:missRing .9s ease-out forwards}
+@keyframes missFade{0%{opacity:1;transform:translate(-50%,-50%) scale(.35)}35%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.55)}}
+@keyframes missRing{0%{opacity:1;transform:scale(.4)}60%{opacity:.85}100%{opacity:0;transform:scale(1.5)}}
+.side{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.card h3{font-size:15px;margin-bottom:8px;color:var(--blue)}
+.found-item{border-left:3px solid var(--green);padding:6px 10px;margin:8px 0;background:var(--panel2);border-radius:0 8px 8px 0;font-size:13px}
+.found-item b{color:var(--green)}
+.found-item .fx{color:var(--sub);font-size:12px;margin-top:2px}
+.rule li{font-size:13px;color:var(--sub);margin-left:18px;margin-bottom:4px}
+/* SECTION: complete modal */
+.mask{position:fixed;inset:0;background:rgba(4,10,20,.72);display:grid;place-items:center;z-index:50;padding:20px}
+.modal{width:min(460px,100%);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;text-align:center;animation:pop .3s}
+.modal .big{font-size:40px}
+.modal h3{font-size:20px;margin:8px 0}
+.modal p{color:var(--sub);font-size:14px}
+.modal .acts{display:flex;gap:10px;justify-content:center;margin-top:18px}
+/* SECTION: teacher */
+.tea-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tea-tabs button{padding:9px 16px;background:var(--panel2);border:1px solid var(--line);color:var(--sub);font-size:14px}
+.tea-tabs button.on{background:var(--amber);color:#241a02;font-weight:800;border-color:var(--amber)}
+.scene-pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.scene-pick button{padding:7px 13px;font-size:13px;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:20px}
+.scene-pick button.on{background:var(--green);color:#04160c;font-weight:700;border-color:var(--green)}
+.ans-stage{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#000}
+.ans-stage img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.ans-box{position:absolute;border:3px solid var(--green);border-radius:8px;box-shadow:0 0 12px rgba(46,204,113,.6);pointer-events:none}
+.ans-box .num{position:absolute;left:-13px;top:-13px;width:26px;height:26px;border-radius:50%;background:var(--green);color:#04160c;font-weight:900;font-size:14px;display:grid;place-items:center;border:2px solid #04160c}
+.ans-list{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+@media (max-width:820px){.ans-list{grid-template-columns:1fr}}
+.ans-item{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--green);border-radius:10px;padding:12px 14px;font-size:13px}
+.ans-item b{color:var(--green);font-size:14px}
+.ans-item .k{color:var(--amber);font-weight:700}
+/* SECTION: board */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--sub);font-weight:600;background:var(--panel2)}
+td b{color:var(--green)}
+.board-tools{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.board-tools input{padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:#0d1a2c;color:var(--txt);width:220px}
+.empty{color:var(--sub);text-align:center;padding:40px 0;font-size:14px}
+#toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%);background:#0d2238;border:1px solid var(--blue);color:var(--txt);padding:10px 22px;border-radius:24px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:99;max-width:86vw;text-align:center}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<!-- SECTION: topbar -->
+<header id="topbar">
+  <div class="logo">⚗️</div>
+  <div>
+    <h1>化学实验室安全隐患排查 · 大家来找茬</h1>
+    <div class="small">安全准入练习 · 10 个场景 · 每图 5 处隐患 · 每处 5 分</div>
+  </div>
+  <div class="who" id="whoBox"></div>
+</header>
+<main>
+  <!-- SECTION: login -->
+  <section id="view-login">
+    <div class="login-card">
+      <h2>🔬 实验室安全排查练习</h2>
+      <div class="sub">请选择身份登录 · 相同账号登录可继续之前的关卡与分数</div>
+      <div class="role-tabs">
+        <button id="roleStu" class="on">‍🎓 学生</button>
+        <button id="roleTea">🧑‍ 教师</button>
+      </div>
+      <div class="field"><label>账号</label><input id="inUser" maxlength="20" placeholder="学号 / 教师工号"></div>
+      <div class="field"><label>密码</label><input id="inPass" type="password" maxlength="30" placeholder="首次登录将自动注册该学生账号"></div>
+      <div class="field" id="nameField"><label>姓名</label><input id="inName" maxlength="12" placeholder="选填，用于成绩榜显示"></div>
+      <div id="loginErr"></div>
+      <button class="btn" id="btnLogin" data-primary-action="1">进入实验室</button>
+      <div class="tip">进度与分数保存在当前浏览器（localStorage）。演示教师账号：<b>teacher / 123456</b>（教师登录后可直接查看每关正确答案与文字讲解）。建议学生使用自己的学号注册。</div>
+    </div>
+  </section>
+
+  <!-- SECTION: student home -->
+  <section id="view-home" class="hidden">
+    <div class="hero">
+      <div>
+        <div class="meta">当前总分（满分 250）</div>
+        <div class="big" id="hScore">0</div>
+      </div>
+      <div style="flex:1;min-width:200px">
+        <div class="meta" id="hMeta"></div>
+        <div class="bar" style="height:10px"><i id="hBar" style="width:0%"></i></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn green" id="btnContinue" data-primary-action="1">▶ 继续闯关</button>
+        <button class="btn ghost" id="btnLogout1">退出</button>
+      </div>
+    </div>
+    <div class="grid" id="lvGrid"></div>
+  </section>
+
+  <!-- SECTION: play -->
+  <section id="view-play" class="hidden">
+    <div class="play-head">
+      <button class="btn ghost sm" id="btnBack">← 关卡列表</button>
+      <div class="t" id="pTitle"></div>
+      <div class="score-pill">
+        <div class="pill">已找 <b id="pFound">0/5</b></div>
+        <div class="pill">本关得分 <b id="pScore">0</b>/25</div>
+        <div class="pill m">点错 <b id="pMiss">0</b> 次</div>
+      </div>
+    </div>
+    <div class="stage-wrap">
+      <div class="stage" id="stage" data-primary-action="1">
+        <img id="stageImg" alt="隐患排查场景图">
+      </div>
+      <aside class="side">
+        <div class="card">
+          <h3>📋 排查规则</h3>
+          <ul class="rule">
+            <li>每张图隐藏 <b style="color:var(--green)">5 处</b>安全隐患</li>
+            <li>点击隐患位置 → <b style="color:var(--green)">+5 分</b>并绿色框出</li>
+            <li>点错位置会闪一个红色光斑后淡出，不扣分</li>
+            <li>找到后可查看风险分析与整改要求</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>✅ 已找到的隐患</h3>
+          <div id="foundList"><div class="small">还没有找到隐患，仔细观察画面中不合规的操作与物品摆放…</div></div>
+        </div>
+        <div class="card" id="lastCard" style="border-color:var(--green)">
+          <h3 style="color:var(--green)">💡 最新发现讲解</h3>
+          <div id="lastExplain" class="small">点击图中隐患后，这里会显示该隐患的风险分析与整改要求。</div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- SECTION: teacher -->
+  <section id="view-teacher" class="hidden">
+    <div class="tea-tabs">
+      <button id="tabAns" class="on">📖 答案与讲解</button>
+      <button id="tabBoard">📊 学生成绩看板</button>
+      <button class="btn ghost sm" id="btnLogout2" style="margin-left:auto">退出登录</button>
+    </div>
+    <div id="paneAns">
+      <div class="scene-pick" id="scenePick"></div>
+      <div class="ans-stage" id="ansStage"><img id="ansImg" alt="场景答案图"></div>
+      <div class="ans-list" id="ansList"></div>
+    </div>
+    <div id="paneBoard" class="hidden">
+      <div class="board-tools">
+        <input id="boardSearch" placeholder="搜索账号 / 姓名">
+        <button class="btn sm" id="btnExport">导出成绩 CSV</button>
+        <button class="btn ghost sm" id="btnRefresh">刷新</button>
+        <span class="small" id="boardMeta"></span>
+      </div>
+      <div style="overflow:auto">
+        <table>
+          <thead><tr><th>账号</th><th>姓名</th><th>总分</th><th>完成关卡</th><th>找到隐患</th><th>点错次数</th><th>最后练习</th><th>操作</th></tr></thead>
+          <tbody id="boardBody"></tbody>
+        </table>
+      </div>
+      <div class="empty hidden" id="boardEmpty">还没有学生登录练习过。学生登录后答题，成绩会实时汇总到这里。</div>
+    </div>
+  </section>
+</main>
+<div id="toast"></div>
+<div class="mask hidden" id="modal">
+  <div class="modal">
+    <div class="big">🎉</div>
+    <h3 id="mTitle">本关全部找到！</h3>
+    <p id="mText"></p>
+    <div class="acts">
+      <button class="btn ghost" id="mBack">返回关卡列表</button>
+      <button class="btn green" id="mNext">下一关 →</button>
+    </div>
+  </div>
+</div>
+<script>
+/* SECTION: levels-data —— 10 个场景关卡；hazards 的 x/y/w/h 为图片百分比坐标（左上角原点） */
+window.LEVELS = [
+  {
+    id: 1, title: '图01 · 试剂柜储存区',
+    hazards: [
+      { x: 19, y: 40, w: 44, h: 28, name: '氧化剂与易燃溶剂混放',
+        risk: '中层架上浓硝酸等氧化剂与无水乙醇、丙酮等易燃溶剂紧邻混存，氧化剂可引燃有机物，受热或泄漏时极易引发火灾甚至爆炸。',
+        fix: '氧化剂与易燃液体分柜、分类隔离存放，禁忌混存严禁同架。' },
+      { x: 46, y: 34, w: 22, h: 34, name: '试剂敞口与无标签分装',
+        risk: '多个试剂瓶未盖瓶塞（旁边还能看到随手放置的瓶塞），蒸气持续挥发积聚，误服、误用风险高。',
+        fix: '取用后立即盖塞；严禁用饮料瓶分装，标签须完整注明名称与浓度。' },
+      { x: 21, y: 74, w: 34, h: 18, name: '试剂渗漏且无托盘',
+        risk: '挥发性试剂瓶底漏液直接流在木质层板上并向下滴落，腐蚀层板、蒸气积聚，遇点火源可起火。',
+        fix: '瓶下设防泄漏托盘，定期检漏，泄漏液按规程吸附清理。' },
+      { x: 75, y: 24, w: 18, h: 20, name: '顶层瓶探出架沿',
+        risk: '顶层货架边缘横放试剂，一瓶已探出即将跌落，浓酸浓碱坠落溅洒造成灼伤与腐蚀。',
+        fix: '化学品不置顶、不靠沿，设防坠挡条或下移至低位柜。' },
+      { x: 19, y: 0, w: 48, h: 23, name: '柜顶堆放纸箱旧文件并紧贴灯具',
+        risk: '柜顶堆积纸箱与旧文件，紧邻照明灯具，可燃物堆积、灯具发热构成点火源，火灾载荷大。',
+        fix: '柜顶清空，与灯具、电气保持安全距离。' }
+    ]
+  },
+  {
+    id: 2, title: '图02 · 分析天平称量区',
+    hazards: [
+      { x: 43, y: 15, w: 14, h: 24, name: '徒手取放砝码',
+        risk: '操作者直接用手捏砝码，汗液腐蚀砝码造成称量偏差，并污染试剂。',
+        fix: '必须用镊子或戴手套取放。' },
+      { x: 36, y: 32, w: 26, h: 22, name: '托盘药粉撒落未清理',
+        risk: '称量纸上与托盘周围药粉大量撒落，造成交叉污染、影响灵敏度与准确性。',
+        fix: '称量完毕立即清扫，保持托盘干燥清洁。' },
+      { x: 43, y: 64, w: 20, h: 14, name: '瓶塞正放、滴管横倒',
+        risk: '红色胶头滴管与瓶塞直接横躺在台面上，瓶塞沾污引入杂质；滴管倒放液体回流腐蚀胶头。',
+        fix: '瓶塞倒放于洁净表面，滴管保持直立于专用架。' },
+      { x: 22, y: 70, w: 54, h: 28, name: '插线板串接多插头且旁有积水',
+        risk: '插线板插满多个插头并串接延长，旁边台面还有大片积水，回路过载发热、水浸短路可致触电起火。',
+        fix: '天平用独立电源，远离水源，线缆架空。' },
+      { x: 2, y: 26, w: 30, h: 40, name: '天平四周堆放纸箱滤纸',
+        risk: '天平周围堆满纸箱与成摞纸张，可燃物包围电气设备，起火风险高。',
+        fix: '台面整理清空，可燃物另柜存放。' }
+    ]
+  },
+  {
+    id: 3, title: '图03 · 通风橱操作区',
+    hazards: [
+      { x: 39, y: 26, w: 12, h: 16, name: '拉门全开且头探入橱内',
+        risk: '通风橱拉门提到最高位、头部直接探入橱内操作，失去面风速屏障，有毒气体直入呼吸带。',
+        fix: '拉门降至警示线以下，头部保持橱外。' },
+      { x: 48, y: 18, w: 11, h: 22, name: '排风管道接口脱落缠胶带',
+        risk: '橱内排风管道接口已经脱落，仅用胶带缠裹悬挂，有毒废气不能排出室外，橱内积聚倒灌。',
+        fix: '立即停用报修，检测面风速合格后方可复用。' },
+      { x: 47, y: 38, w: 17, h: 22, name: '橱内长期存放废液桶与纸箱',
+        risk: '通风橱内堆放整箱试剂与多个纸箱，占用操作区、扰乱气流，挥发物积聚。',
+        fix: '通风橱仅作操作之用，不存放任何物品。' },
+      { x: 32, y: 26, w: 9, h: 26, name: '未戴护目镜、长发披散',
+        risk: '操作者长发完全披散垂向台面且未戴护目镜，喷溅伤眼；头发接触化学品或被设备卷入。',
+        fix: '全程佩戴护目镜，长发扎起。' },
+      { x: 39, y: 70, w: 16, h: 26, name: '橱前堆放文件堵住进风口',
+        risk: '橱前地面堆放整摞文件，紧贴并堵住下部回风/进风格栅，气流组织被破坏，泄漏时还阻碍撤离。',
+        fix: '橱前保持畅通无堆放。' }
+    ]
+  },
+  {
+    id: 4, title: '图04 · 滴定台操作区',
+    hazards: [
+      { x: 11, y: 52, w: 24, h: 28, name: '不用烧杯直接倾倒浓盐酸且洒流',
+        risk: '试剂瓶液体直接倾倒到台面并四处洒流，强酸飞溅灼伤皮肤眼睛，腐蚀台面。',
+        fix: '经烧杯/玻璃棒转移，洒出立即冲洗清理。' },
+      { x: 81, y: 48, w: 18, h: 24, name: '残液直接倒入水槽',
+        risk: '右侧操作者将管中残液直接倒进水槽，污染管网与水环境，酸碱反应放热。',
+        fix: '残液分类倒入指定废液容器。' },
+      { x: 27, y: 10, w: 18, h: 24, name: '未戴护目镜凑近读数',
+        risk: '操作者面部距离瓶口与液面极近且未戴护目镜，指示剂或液滴随时溅入眼内。',
+        fix: '佩戴护目镜，视线与凹液面水平读数。' },
+      { x: 35, y: 72, w: 10, h: 14, name: '瓶塞不倒放、标签不向手心',
+        risk: '红色瓶塞正放在台面上沾污，倾倒时标签没有朝向手心，残液流下腐蚀标签。',
+        fix: '瓶塞倒放，标签朝手心缓慢倾倒。' },
+      { x: 55, y: 44, w: 30, h: 38, name: '台边器皿插放过满倾斜',
+        risk: '试管架上量筒、试管插放过密，多支已明显倾斜滑出，滑落砸碎割伤手、试剂泼洒。',
+        fix: '用试管架置于台面内侧，装载适度。' }
+    ]
+  },
+  {
+    id: 5, title: '图05 · 加热与蒸馏区',
+    hazards: [
+      { x: 19, y: 12, w: 18, h: 64, name: '明火直接加热敞口易燃溶剂',
+        risk: '酒精灯明火直接加热敞口锥形瓶内的易燃液体，蒸气遇明火闪燃、爆炸。',
+        fix: '易燃溶剂严禁明火，改水浴/油浴并回流密闭。' },
+      { x: 35, y: 48, w: 24, h: 26, name: '热烧杯直接放木质台面靠近纸品',
+        risk: '受热烧杯（底部发红）直接放在木质台面，旁边就是纸巾滤纸，高温引燃可燃物。',
+        fix: '垫石棉网/隔热垫，远离纸品滤纸。' },
+      { x: 54, y: 40, w: 30, h: 24, name: '毛巾搭在通电电炉上烘烤',
+        risk: '蓝色毛巾直接搭在通电发红的高温电炉盘上烘烤，电器过热引燃织物。',
+        fix: '加热设备严禁兼作烘干。' },
+      { x: 66, y: 60, w: 18, h: 26, name: '电源线贴灼热炉面经过',
+        risk: '电炉电源线紧贴灼热炉体边缘经过，外皮已经熔化变形，绝缘层熔化短路、触电。',
+        fix: '线缆远离热源走线。' },
+      { x: 73, y: 22, w: 24, h: 36, name: '试剂台一角电热水壶烧水',
+        risk: '不锈钢电热水壶放在试剂台一角冒蒸汽烧水，旁边就是试剂瓶，沸腾蒸汽加速试剂挥发，干烧起火。',
+        fix: '化学操作台禁止烧水，饮水设备远离试剂区。' }
+    ]
+  },
+  {
+    id: 6, title: '图06 · 气体钢瓶区',
+    hazards: [
+      { x: 19, y: 14, w: 14, h: 58, name: '钢瓶无瓶帽无防倒链斜靠墙边',
+        risk: '白色钢瓶无瓶帽、无任何固定，仅斜靠在暖气片旁，倾倒砸断瓶阀，高压气体喷出使钢瓶变“飞行物”。',
+        fix: '瓶架/链条固定，不使用时戴好瓶帽。' },
+      { x: 14, y: 70, w: 18, h: 24, name: '氧气瓶旁放沾油手套与油抹布',
+        risk: '地面散落沾满油污的手套和黑色油抹布，高压纯氧遇油脂可自燃爆炸。',
+        fix: '氧气瓶及附件严禁接触油脂，用专用无油工具。' },
+      { x: 29, y: 12, w: 9, h: 26, name: '扳手插在瓶阀上、钢瓶紧靠暖气片',
+        risk: '大扳手插在瓶阀上未取下，钢瓶又紧靠暖气片，受热升压、误开阀失控放气。',
+        fix: '扳手用毕取下；远离热源，与明火距离不小于10米。' },
+      { x: 68, y: 10, w: 16, h: 22, name: '减压表出气口朝向过道',
+        risk: '蓝色钢瓶减压表的出气口水平朝向房间通道方向，泄漏或部件飞出伤及通行人员。',
+        fix: '出气口朝墙，设警示标识。' },
+      { x: 37, y: 70, w: 46, h: 28, name: '空瓶满瓶混放无状态标签',
+        risk: '多只钢瓶横躺在地上，空瓶满瓶混放、无任何状态标签，误接断供、余压倒灌污染系统。',
+        fix: '分区存放并挂“满/空”标识。' }
+    ]
+  },
+  {
+    id: 7, title: '图07 · 废液收集区',
+    hazards: [
+      { x: 14, y: 22, w: 28, h: 32, name: '酸碱废液同桶混倒',
+        risk: '黄色酸性废液与蓝色碱性（含铜）废液同时倒入同一收集桶，剧烈放热、产生气体，桶内喷溅胀裂。',
+        fix: '按酸、碱、有机、含重金属等分类收集，混倒前先确认相容。' },
+      { x: 41, y: 48, w: 20, h: 34, name: '无标签废液桶',
+        risk: '右侧棕色大桶通体没有任何标签，成分不明，转运与处置环节极易出事故。',
+        fix: '桶贴标签注明主要成分、产生日期与危险特性。' },
+      { x: 19, y: 48, w: 28, h: 34, name: '过满外溢且无托盘',
+        risk: '灰色收集桶液面已过满，黄蓝废液沿桶壁漫流到地面，腐蚀性液体漫流地面伤人毁物。',
+        fix: '收集不超过容积3/4，桶下设二次防漏托盘。' },
+      { x: 57, y: 64, w: 28, h: 28, name: '有机溶剂敞口放地漏旁',
+        risk: '透明玻璃瓶敞口放置（瓶盖丢在一旁）并紧邻地漏，瓶口还有白雾挥发，蒸气沿地漏进入管网，积聚达爆炸极限。',
+        fix: '密闭收集，远离火源与地漏。' },
+      { x: 44, y: 6, w: 28, h: 44, name: '废液桶挡住紧急冲淋器和通道',
+        risk: '黄色紧急冲淋器被废液桶、打印设备与推车包围遮挡，灼伤事故时无法在黄金时间冲淋，逃生受阻。',
+        fix: '应急设施与疏散通道前严禁堆放。' }
+    ]
+  },
+  {
+    id: 8, title: '图08 · 应急设施区',
+    hazards: [
+      { x: 1, y: 48, w: 26, h: 48, name: '灭火器压力指针在红区且被纸箱遮挡',
+        risk: '灭火器压力表指针指向红区（失压），且前方被纸箱堆遮挡，紧急时无有效灭火剂可用。',
+        fix: '每月点检压力与铅封，定点放置、取用无遮挡。' },
+      { x: 23, y: 28, w: 34, h: 52, name: '洗眼器周围堆满杂物',
+        risk: '洗眼器四周被纸箱、设备与成堆文件包围，化学品入眼后无法立即冲洗，伤害加重。',
+        fix: '保持四周操作空间，每周试冲一次。' },
+      { x: 73, y: 22, w: 26, h: 42, name: '急救箱空置、过期药械散放',
+        risk: '急救箱内几乎空了，药品纱布散乱堆在台面上且有过期品，应急处置无物资或用过期品造成二次伤害。',
+        fix: '专人保管、清单化管理，及时补充更换。' },
+      { x: 46, y: 4, w: 26, h: 42, name: '安全出口门锁闭、通道堆试剂箱',
+        risk: '安全出口双扇门上锁（挂锁锁闭），门前通道堆满纸箱，火灾爆炸时人员无法疏散。',
+        fix: '出口营业/实验时段保持不锁闭，通道净空。' },
+      { x: 45, y: 76, w: 34, h: 22, name: '泄漏应急砂桶为空、地面泄漏液未警示',
+        risk: '黄色应急桶是空的，地面一大滩深色泄漏液没有任何围挡与警示标识，泄漏扩大蔓延，他人滑倒带毒。',
+        fix: '砂/吸附棉常备足量，发现泄漏立即围挡警示并处置。' }
+    ]
+  },
+  {
+    id: 9, title: '图09 · 个体防护与行为规范区',
+    hazards: [
+      { x: 7, y: 36, w: 16, h: 30, name: '用嘴吹吸胶头滴管',
+        risk: '左侧学生直接用嘴含住胶头滴管吸取液体，直接吞服腐蚀性、毒性液体的风险极高。',
+        fix: '必须配洗耳球/移液器，严禁口吸。' },
+      { x: 55, y: 32, w: 15, h: 28, name: '实验台边喝饮料吃零食',
+        risk: '一名学生在实验台上大口吃汉堡、旁边开着罐可乐，化学品经手-口途径进入体内。',
+        fix: '实验室内严禁饮食。' },
+      { x: 77, y: 48, w: 20, h: 48, name: '穿短裤拖鞋、未穿实验服',
+        risk: '门口学生只穿衬衫、短裤加人字拖进入实验室，酸碱泼洒直接灼伤裸露皮肤。',
+        fix: '穿实验服、长裤、包趾防滑鞋。' },
+      { x: 85, y: 30, w: 15, h: 28, name: '戴手套玩手机、拉门把手',
+        risk: '学生戴着蓝色实验手套边走边玩手机，还用手套直接拉门把手，污染物随手套扩散至公共界面。',
+        fix: '离开操作位前脱手套并洗手。' },
+      { x: 35, y: 24, w: 24, h: 52, name: '裸鼻凑瓶口闻味、长发未扎',
+        risk: '中间女生长发完全披散垂到瓶口上方，脸部裸鼻直接凑近试剂瓶闻气味，吸入高浓度有毒蒸气；头发沾染药剂或引火。',
+        fix: '手扇引气轻嗅，长发扎起。' }
+    ]
+  },
+  {
+    id: 10, title: '图10 · 用电与综合隐患区',
+    hazards: [
+      { x: 35, y: 28, w: 24, h: 22, name: '烘箱顶部堆纸箱、散热孔被盖',
+        risk: '设备顶部堆满纸箱，散热格栅被文件与箱体遮挡，热量积聚引燃覆盖物。',
+        fix: '顶部与四周留散热空间，严禁堆物。' },
+      { x: 44, y: 70, w: 20, h: 24, name: '插线板串联并接多台大功率仪器',
+        risk: '两只插线板互相串接，插满大功率设备插头放在潮湿地面，回路过载、电线外皮过热起火。',
+        fix: '大功率设备专线供电，不串接插排。' },
+      { x: 26, y: 78, w: 24, h: 20, name: '积水处裸露线头泡在水里',
+        risk: '地面大片积水，黄色电线线头破损裸露直接泡在水里，漏电致触电伤亡。',
+        fix: '立即断电、干燥，由持证人员修复线路。' },
+      { x: 19, y: 27, w: 10, h: 20, name: '透明瓶浓硝酸阳光直射存放',
+        risk: '贴标签的透明试剂瓶（浓硝酸类）放在靠窗架上被阳光直射，光照加速分解产生NOx，瓶内升压喷溅。',
+        fix: '见光分解试剂用棕色瓶，阴凉避光存放。' },
+      { x: 76, y: 4, w: 17, h: 26, name: '高真空干燥器置于台边无防护罩',
+        risk: '玻璃真空干燥器放在高处层板边缘，下方悬空无任何防护，内外压差下碎裂（implode），玻璃高速飞溅。',
+        fix: '外缠胶带或加防护罩，放稳固台面内侧。' }
+    ]
+  }
+];
+
+/* SECTION: image-urls —— 关卡场景图公网地址（运行时赋值，索引0对应图01） */
+window.IMG_URLS = [
+  'https://workspace-cdn.uzone.com/9f70133db2c54784889b7d002b61e72b%2Fo%2F1792684297355-c.png?auth_key=1795481961-0-0-d0be72c9780745665c043349d215d286',
+  'https://workspace-cdn.uzone.com/819b77ec463441089fe12922dd3c3009%2Fo%2F1792684331903-c.png?auth_key=1795481962-0-0-9b7b77a4d1c4c951b0cc2caedfbdb31e',
+  'https://workspace-cdn.uzone.com/0732aaec48ee4f138f4fc2d1e8cfc393%2Fo%2F1792684331497-c.png?auth_key=1795481963-0-0-edc455d8755828fdf742f73a39ef50a2',
+  'https://workspace-cdn.uzone.com/d087b045f7e44d7398842e0eda301f61%2Fo%2F1792684331495-c.png?auth_key=1795481964-0-0-048cdde1928744b064f59330593f27ad',
+  'https://workspace-cdn.uzone.com/4165b549727243bc9ae2630da53ffdec%2Fo%2F1792684331414-c.png?auth_key=1795481965-0-0-995acace7f92280b9cb0619ec66235e1',
+  'https://workspace-cdn.uzone.com/8a9a76403ae3456a8d96aec1bc7ec0f6%2Fo%2F1792684358779-c.png?auth_key=1795481966-0-0-5f06a674e7804f0da9aa1a534fae5bbd',
+  'https://workspace-cdn.uzone.com/9a7fc4e8a2f14342bff2e8649833e9ee%2Fo%2F1792684359688-c.png?auth_key=1795481967-0-0-61026ced97133aecec4206c9c1e35685',
+  'https://workspace-cdn.uzone.com/dd239ef2cb4b46ebb14ec8a4d002c138%2Fo%2F1792684360619-c.png?auth_key=1795481968-0-0-1b3ade4dc68b03df644a781c0d37e3a1',
+  'https://workspace-cdn.uzone.com/5ece5953e5b5472bbe6afd63fd703f2d%2Fo%2F1792684361531-c.png?auth_key=1795481969-0-0-6f812aedfe10b34374035faed63c542d',
+  'https://workspace-cdn.uzone.com/dd0ba04e7a304cfcabf926d8735a64aa%2Fo%2F1792684362478-c.png?auth_key=1795481971-0-0-f46cbb1a479064d3cf87530619990f31'
+];
+
+</script>
+<script>
+/* SECTION: app-core —— 账号、进度、路由 */
+(function(){
+  var K={users:'clh_users',cur:'clh_current',pfx:'clh_p_'};
+  function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null;}}
+  function users(){return JSON.parse(ls(K.users)||'{}');}
+  function saveUsers(u){ls(K.users,JSON.stringify(u));}
+  function seed(){var u=users();if(!u['teacher']){u['teacher']={role:'teacher',pass:'123456',name:'管理教师'};saveUsers(u);}}
+  function progOf(acc){return JSON.parse(ls(K.pfx+acc)||'{"found":{},"misses":0}');}
+  function saveProg(acc,p){
+    var d=new Date(),z=function(n){return n<10?'0'+n:''+n;};
+    p.last=d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+' '+z(d.getHours())+':'+z(d.getMinutes());
+    ls(K.pfx+acc,JSON.stringify(p));
+  }
+  function lvFound(p,id){return (p.found&&p.found[id])||[];}
+  function totalScore(p){var t=0;for(var k in p.found){t+=p.found[k].length*5;}return t;}
+  function doneLevels(p){var n=0;window.LEVELS.forEach(function(L){if(lvFound(p,L.id).length>=L.hazards.length)n++;});return n;}
+  var cur=null; // {account, role, name}
+  function setWho(){var b=document.getElementById('whoBox');
+    if(!cur){b.innerHTML='';return;}
+    b.innerHTML='<span>'+(cur.name||cur.account)+'</span><span class="badge '+(cur.role==='teacher'?'tea':'stu')+'">'+(cur.role==='teacher'?'教师':'学生')+'</span>';}
+  function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show');},2200);}
+  function show(id){['view-login','view-home','view-play','view-teacher'].forEach(function(v){document.getElementById(v).classList.toggle('hidden',v!==id);});}
+  /* SECTION: login-flow */
+  var role='student';
+  function bindRole(){var s=document.getElementById('roleStu'),t=document.getElementById('roleTea');
+    s.onclick=function(){role='student';s.classList.add('on');t.classList.remove('on');document.getElementById('nameField').style.display='';};
+    t.onclick=function(){role='teacher';t.classList.add('on');s.classList.remove('on');document.getElementById('nameField').style.display='none';};}
+  function doLogin(){
+    var acc=document.getElementById('inUser').value.trim();
+    var pass=document.getElementById('inPass').value;
+    var name=document.getElementById('inName').value.trim();
+    var err=document.getElementById('loginErr');err.textContent='';
+    if(!acc||acc.length<2){err.textContent='请输入至少 2 位的账号（学生建议用学号）';return;}
+    if(!pass){err.textContent='请输入密码';return;}
+    var u=users(),rec=u[acc];
+    if(rec){
+      if(rec.role!==role){err.textContent='该账号已注册为'+(rec.role==='teacher'?'教师':'学生')+'，请切换身份';return;}
+      if(rec.pass!==pass){err.textContent='密码不正确';return;}
+      if(role==='teacher'&&acc!=='teacher'){err.textContent='教师端仅开放演示账号 teacher';return;}
+    }else{
+      if(role==='teacher'){err.textContent='教师账号请使用演示账号 teacher / 123456';return;}
+      u[acc]={role:'student',pass:pass,name:name||acc};saveUsers(u);
+      toast('已为学生账号「'+acc+'」建档，开始闯关吧！');
+    }
+    if(role==='student'&&!name&&u[acc]){u[acc].name=u[acc].name||acc;}
+    cur={account:acc,role:u[acc].role,name:u[acc].name};ls(K.cur,JSON.stringify(cur));setWho();
+    if(cur.role==='teacher'){show('view-teacher');renderTeacher();}
+    else{show('view-home');renderHome();}
+  }
+  function logout(){cur=null;ls(K.cur,'');setWho();show('view-login');}
+  /* SECTION: student-home */
+  function renderHome(){
+    var p=progOf(cur.account);
+    document.getElementById('hScore').textContent=totalScore(p);
+    var foundN=0,tot=0;window.LEVELS.forEach(function(L){foundN+=lvFound(p,L.id).length;tot+=L.hazards.length;});
+    document.getElementById('hMeta').textContent='已通关 '+doneLevels(p)+' / 10 · 已找到隐患 '+foundN+' / '+tot;
+    document.getElementById('hBar').style.width=(foundN/tot*100)+'%';
+    var g=document.getElementById('lvGrid');g.innerHTML='';
+    window.LEVELS.forEach(function(L){
+      var f=lvFound(p,L.id).length,full=f>=L.hazards.length;
+      var card=document.createElement('div');card.className='lv-card';
+      card.innerHTML='<div class="thumb" style="background-image:url('+(window.IMG_URLS[L.id-1]||'')+')">'+
+        '<span class="st '+(full?'done':(f?'part':''))+'">'+(full?'✅ 已完成':(f?'进行中':'未开始'))+'</span></div>'+
+        '<div class="body"><div class="t">'+L.title+'</div>'+
+        '<div class="s">得分 '+(f*5)+' / '+(L.hazards.length*5)+' · 隐患 '+f+'/'+L.hazards.length+'</div>'+
+        '<div class="bar"><i style="width:'+(f/L.hazards.length*100)+'%"></i></div></div>';
+      card.onclick=function(){openLevel(L.id);};
+      g.appendChild(card);
+    });
+    var next=window.LEVELS.find(function(L){return lvFound(p,L.id).length<L.hazards.length;});
+    var bc=document.getElementById('btnContinue');
+    if(next){bc.textContent='▶ 继续：'+next.title.split('·')[1].trim();bc.onclick=function(){openLevel(next.id);};}
+    else{bc.textContent='🏆 已全部通关';bc.onclick=function(){toast('恭喜！10 个场景全部排查完成，总分 '+totalScore(p)+' / 250');};}
+  }
+  /* SECTION: play */
+  var playLv=null;
+  function openLevel(id){
+    var L=window.LEVELS.find(function(x){return x.id===id;});if(!L)return;
+    playLv=L;show('view-play');
+    document.getElementById('pTitle').textContent=L.title;
+    var img=document.getElementById('stageImg');
+    img.src=window.IMG_URLS[L.id-1]||'';
+    img.onerror=function(){img.onerror=null;img.src=['assets','img','level'+('0'+L.id).slice(-2)+'.png'].join('/');};
+    var stage=document.getElementById('stage');
+    stage.querySelectorAll('.hit-box').forEach(function(n){n.remove();});
+    renderPlay();
+  }
+  function renderPlay(){
+    var p=progOf(cur.account),f=lvFound(p,playLv.id);
+    document.getElementById('pFound').textContent=f.length+'/'+playLv.hazards.length;
+    document.getElementById('pScore').textContent=f.length*5;
+    document.getElementById('pMiss').textContent=p.misses||0;
+    var stage=document.getElementById('stage');
+    stage.querySelectorAll('.hit-box').forEach(function(n){n.remove();});
+    f.forEach(function(i){drawBox(stage,playLv.hazards[i],i,false);});
+    var list=document.getElementById('foundList');
+    if(!f.length){list.innerHTML='<div class="small">还没有找到隐患，仔细观察画面中不合规的操作与物品摆放…</div>';}
+    else{list.innerHTML=f.map(function(i){var h=playLv.hazards[i];
+      return '<div class="found-item"><b>✓ +5分</b> '+h.name+'<div class="fx">'+h.fix+'</div></div>';}).join('');}
+  }
+  function drawBox(stage,h,i,teacher){
+    var b=document.createElement('div');b.className=teacher?'ans-box':'hit-box';
+    b.style.left=h.x+'%';b.style.top=h.y+'%';b.style.width=h.w+'%';b.style.height=h.h+'%';
+    b.innerHTML=teacher?'<span class="num">'+(i+1)+'</span>':'<span class="tag">✓ +5 分</span>';
+    stage.appendChild(b);
+  }
+  function stageClick(ev){
+    if(!playLv||!cur)return;
+    var stage=document.getElementById('stage'),r=stage.getBoundingClientRect();
+    var px=(ev.clientX-r.left)/r.width*100,py=(ev.clientY-r.top)/r.height*100;
+    var p=progOf(cur.account),f=lvFound(p,playLv.id);
+    var hit=-1;
+    playLv.hazards.forEach(function(h,i){
+      var pad=1.5;
+      if(px>=h.x-pad&&px<=h.x+h.w+pad&&py>=h.y-pad&&py<=h.y+h.h+pad&&f.indexOf(i)<0)hit=i;
+    });
+    if(hit>=0){
+      f.push(hit);p.found[playLv.id]=f;saveProg(cur.account,p);
+      drawBox(stage,playLv.hazards[hit],hit,false);
+      var h=playLv.hazards[hit];
+      document.getElementById('lastExplain').innerHTML='<b style="color:var(--green)">'+h.name+'</b>（+5 分）<br><span class="k" style="color:var(--amber)">风险：</span>'+h.risk+'<br><span style="color:var(--blue)">整改：</span>'+h.fix;
+      renderPlay();
+      if(f.length>=playLv.hazards.length)completeLevel();
+    }else{
+      p.misses=(p.misses||0)+1;saveProg(cur.account,p);
+      document.getElementById('pMiss').textContent=p.misses;
+      var fl=document.createElement('div');fl.className='miss-flash';
+      fl.style.left=px+'%';fl.style.top=py+'%';
+      stage.appendChild(fl);
+      setTimeout(function(){fl.remove();},950);
+    }
+  }
+  function completeLevel(){
+    var all=window.LEVELS.every(function(L){return lvFound(progOf(cur.account),L.id).length>=L.hazards.length;});
+    var next=window.LEVELS.find(function(L){return L.id>playLv.id&&lvFound(progOf(cur.account),L.id).length<L.hazards.length;});
+    document.getElementById('mTitle').textContent=all?'🏆 全部场景排查完成！':'本关 5 处隐患全部找到！';
+    document.getElementById('mText').textContent='本关得分 25 / 25 · 当前总分 '+totalScore(progOf(cur.account))+' / 250'+(all?'，满分通关，安全小卫士就是你！':'');
+    var mb=document.getElementById('mNext');
+    if(all||!next){mb.textContent='返回关卡列表';mb.onclick=function(){closeModal();renderHome();};}
+    else{mb.textContent='下一关 →';mb.onclick=function(){closeModal();openLevel(next.id);};}
+    document.getElementById('modal').classList.remove('hidden');
+  }
+  function closeModal(){document.getElementById('modal').classList.add('hidden');}
+  /* SECTION: teacher-answers */
+  var teaLv=1;
+  function renderTeacher(){
+    var pick=document.getElementById('scenePick');pick.innerHTML='';
+    window.LEVELS.forEach(function(L){
+      var b=document.createElement('button');b.textContent=L.title;
+      if(L.id===teaLv)b.className='on';
+      b.onclick=function(){teaLv=L.id;renderTeacher();};
+      pick.appendChild(b);
+    });
+    var L=window.LEVELS.find(function(x){return x.id===teaLv;});
+    var img=document.getElementById('ansImg');
+    img.src=window.IMG_URLS[L.id-1]||'';
+    img.onerror=function(){img.onerror=null;img.src=['assets','img','level'+('0'+L.id).slice(-2)+'.png'].join('/');};
+    var st=document.getElementById('ansStage');
+    st.querySelectorAll('.ans-box').forEach(function(n){n.remove();});
+    L.hazards.forEach(function(h,i){drawBox(st,h,i,true);});
+    document.getElementById('ansList').innerHTML=L.hazards.map(function(h,i){
+      return '<div class="ans-item"><b>'+(i+1)+'. '+h.name+'</b><div><span class="k">风险分析：</span>'+h.risk+'</div><div><span style="color:var(--blue)">整改要求：</span>'+h.fix+'</div></div>';
+    }).join('');
+  }
+  /* SECTION: teacher-board */
+  function boardRows(){
+    var u=users(),rows=[];
+    for(var acc in u){if(u[acc].role!=='student')continue;
+      var p=progOf(acc),f=0;for(var k in p.found)f+=p.found[k].length;
+      rows.push({acc:acc,name:u[acc].name||'',score:totalScore(p),done:doneLevels(p),found:f,miss:p.misses||0});
+    }
+    rows.sort(function(a,b){return b.score-a.score;});
+    return rows;
+  }
+  function renderBoard(){
+    var kw=document.getElementById('boardSearch').value.trim().toLowerCase();
+    var rows=boardRows().filter(function(r){return !kw||r.acc.toLowerCase().indexOf(kw)>=0||r.name.toLowerCase().indexOf(kw)>=0;});
+    var tb=document.getElementById('boardBody');tb.innerHTML='';
+    rows.forEach(function(r){
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td>'+r.acc+'</td><td>'+r.name+'</td><td><b>'+r.score+'</b> /250</td><td>'+r.done+'/10</td><td>'+r.found+'/50</td><td>'+r.miss+'</td><td>'+(r.last||'—')+'</td>';
+      var tdOp=document.createElement('td');
+      var del=document.createElement('button');del.className='btn red sm';del.textContent='清空进度';
+      del.onclick=function(){if(confirm('确认清空账号「'+r.acc+'」的全部答题进度与分数？')){ls(K.pfx+r.acc,'');renderBoard();toast('已清空 '+r.acc+' 的进度');}};
+      tdOp.appendChild(del);tr.appendChild(tdOp);tb.appendChild(tr);
+    });
+    document.getElementById('boardEmpty').classList.toggle('hidden',rows.length>0);
+    document.getElementById('boardMeta').textContent='共 '+boardRows().length+' 个学生账号 · 数据来自本浏览器';
+  }
+  function exportCsv(){
+    var rows=boardRows();if(!rows.length){toast('暂无学生数据');return;}
+    var head=['账号','姓名','总分','完成关卡','找到隐患','点错次数'];
+    var lines=[head.join(',')].concat(rows.map(function(r){return [r.acc,r.name,r.score,r.done+'/10',r.found+'/50',r.miss].join(',');}));
+    var blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download='实验室安全排查成绩_'+new Date().toISOString().slice(0,10)+'.csv';
+    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href);
+    toast('成绩 CSV 已导出');
+  }
+  /* SECTION: wiring */
+  function boot(){
+    seed();bindRole();
+    document.getElementById('btnLogin').onclick=doLogin;
+    document.getElementById('inPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+    document.getElementById('btnLogout1').onclick=logout;
+    document.getElementById('btnLogout2').onclick=logout;
+    document.getElementById('btnBack').onclick=function(){show('view-home');renderHome();};
+    document.getElementById('stage').addEventListener('click',stageClick);
+    document.getElementById('mBack').onclick=function(){closeModal();show('view-home');renderHome();};
+    document.getElementById('tabAns').onclick=function(){tab(true);};
+    document.getElementById('tabBoard').onclick=function(){tab(false);};
+    function tab(ans){document.getElementById('tabAns').classList.toggle('on',ans);document.getElementById('tabBoard').classList.toggle('on',!ans);
+      document.getElementById('paneAns').classList.toggle('hidden',!ans);document.getElementById('paneBoard').classList.toggle('hidden',ans);
+      if(!ans)renderBoard();}
+    document.getElementById('btnRefresh').onclick=renderBoard;
+    document.getElementById('boardSearch').addEventListener('input',renderBoard);
+    document.getElementById('btnExport').onclick=exportCsv;
+    var saved=ls(K.cur);
+    if(saved){try{cur=JSON.parse(saved);if(cur&&cur.account&&users()[cur.account]){setWho();
+      if(cur.role==='teacher'){show('view-teacher');renderTeacher();}else{show('view-home');renderHome();}return;}}catch(e){}}
+    show('view-login');
+  }
+  boot();
+})();
+</script>
+</body>
+</html>
